@@ -1,4 +1,20 @@
 
+export interface ARHotspot {
+  id: string;
+  label: string;
+  category: string;
+  description: string;
+  x: number; // Relative X coordinate (0-100) for AR positioning
+  y: number; // Relative Y coordinate (0-100) for AR positioning
+  mapX: number; // Relative X coordinate for 2D map
+  mapY: number; // Relative Y coordinate for 2D map
+  distance: string;
+  rating: number;
+  reviews: number;
+  price: number;
+  iconType: 'landmark' | 'history' | 'nature' | 'wildlife' | 'info' | 'sparkles';
+}
+
 export interface Attraction {
   id: string;
   name: string;
@@ -9,6 +25,7 @@ export interface Attraction {
   imageUrl: string;
   description: string;
   price: number;
+  arHotspots?: ARHotspot[];
 }
 
 export interface User {
@@ -39,5 +56,6 @@ export enum AppRoute {
   PAYMENT = 'payment',
   SUCCESS = 'success',
   PROFILE = 'profile',
-  ADMIN_DASHBOARD = 'admin-dashboard'
+  ADMIN_DASHBOARD = 'admin-dashboard',
+  AR_VIEW = 'ar-view'
 }

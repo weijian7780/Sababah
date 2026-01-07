@@ -10,6 +10,7 @@ import Detail from './views/Detail';
 import Booking from './views/Booking';
 import Profile from './views/Profile';
 import AdminDashboard from './views/AdminDashboard';
+import ARView from './views/ARView';
 import Layout from './components/Layout';
 
 const App: React.FC = () => {
@@ -19,13 +20,15 @@ const App: React.FC = () => {
 
   // Simplified Router
   const navigate = (route: AppRoute, data?: any) => {
-    if (data && route === AppRoute.DETAIL) {
+    if (data && (route === AppRoute.DETAIL || route === AppRoute.AR_VIEW)) {
       setSelectedAttraction(data);
     }
     setCurrentRoute(route);
   };
 
   const renderRoute = () => {
+    const defaultAttraction = selectedAttraction || ATTRACTIONS[0];
+    
     switch (currentRoute) {
       case AppRoute.WELCOME:
         return <Welcome onNext={() => navigate(AppRoute.LOGIN)} />;
@@ -37,15 +40,21 @@ const App: React.FC = () => {
         return <Explore onSelect={(attr) => navigate(AppRoute.DETAIL, attr)} />;
       case AppRoute.DETAIL:
         return <Detail 
-          attraction={selectedAttraction || ATTRACTIONS[0]} 
+          attraction={defaultAttraction} 
           onBack={() => navigate(AppRoute.HOME)} 
           onBook={() => navigate(AppRoute.BOOKING)} 
+          onEnterAR={() => navigate(AppRoute.AR_VIEW, defaultAttraction)}
         />;
       case AppRoute.BOOKING:
         return <Booking 
-          attraction={selectedAttraction || ATTRACTIONS[0]} 
+          attraction={defaultAttraction} 
           onBack={() => navigate(AppRoute.DETAIL, selectedAttraction)} 
           onSuccess={() => navigate(AppRoute.HOME)}
+        />;
+      case AppRoute.AR_VIEW:
+        return <ARView 
+          attraction={defaultAttraction} 
+          onBack={() => navigate(AppRoute.DETAIL, defaultAttraction)} 
         />;
       case AppRoute.PROFILE:
         return <Profile onLogout={() => { setIsLoggedIn(false); navigate(AppRoute.LOGIN); }} onAdmin={() => navigate(AppRoute.ADMIN_DASHBOARD)} />;
@@ -56,7 +65,7 @@ const App: React.FC = () => {
     }
   };
 
-  const isFullPage = [AppRoute.WELCOME, AppRoute.LOGIN, AppRoute.SIGNUP, AppRoute.ADMIN_DASHBOARD].includes(currentRoute);
+  const isFullPage = [AppRoute.WELCOME, AppRoute.LOGIN, AppRoute.SIGNUP, AppRoute.ADMIN_DASHBOARD, AppRoute.AR_VIEW].includes(currentRoute);
 
   return (
     <Layout activeRoute={currentRoute} onNavigate={navigate} showNav={!isFullPage}>

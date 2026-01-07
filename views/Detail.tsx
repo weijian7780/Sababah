@@ -1,16 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, MapPin, Star, Share2, Heart, Clock, Calendar, Users, Info } from 'lucide-react';
-import { Attraction } from '../types';
+import { ArrowLeft, MapPin, Star, Share2, Heart, Clock, Calendar, Users, Info, Box } from 'lucide-react';
+import { Attraction, AppRoute } from '../types';
 import { geminiService } from '../services/geminiService';
 
 interface DetailProps {
   attraction: Attraction;
   onBack: () => void;
   onBook: () => void;
+  onEnterAR: () => void;
 }
 
-const Detail: React.FC<DetailProps> = ({ attraction, onBack, onBook }) => {
+const Detail: React.FC<DetailProps> = ({ attraction, onBack, onBook, onEnterAR }) => {
   const [activeTab, setActiveTab] = useState('Overview');
   const [aiTips, setAiTips] = useState<string>('Loading smart tips...');
 
@@ -38,8 +39,12 @@ const Detail: React.FC<DetailProps> = ({ attraction, onBack, onBook }) => {
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div className="flex gap-3">
-            <button className="p-3 bg-white/20 backdrop-blur-xl rounded-2xl text-white border border-white/20">
-              <Share2 className="w-6 h-6" />
+            <button 
+              onClick={onEnterAR}
+              className="p-3 bg-emerald-600/80 backdrop-blur-xl rounded-2xl text-white border border-emerald-400/30 flex items-center gap-2 pr-4 shadow-lg active:scale-95 transition-all"
+            >
+              <Box className="w-6 h-6" />
+              <span className="text-xs font-black uppercase tracking-widest">AR</span>
             </button>
             <button className="p-3 bg-white/20 backdrop-blur-xl rounded-2xl text-white border border-white/20">
               <Heart className="w-6 h-6" />

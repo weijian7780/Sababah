@@ -2,6 +2,7 @@
   "name": "SabaBah - Explore Sabah",
   "description": "A high-fidelity tourism application for exploring Sabah, featuring attraction discovery, booking management, and a comprehensive CMS dashboard.",
   "requestFramePermissions": [
-    "geolocation"
+    "geolocation",
+    "camera"
   ]
 }
