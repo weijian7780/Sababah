@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppRoute, Attraction } from './types';
+import { AppRoute, Attraction, Review } from './types';
 import { ATTRACTIONS } from './constants';
 import Welcome from './views/Welcome';
 import Login from './views/Login';
@@ -16,6 +16,7 @@ import Favorites from './views/Favorites';
 import AdminDashboard from './views/AdminDashboard';
 import ARView from './views/ARView';
 import Layout from './components/Layout';
+import { PersonalInfo, NotificationSettings, PrivacySecurity, HelpCenter } from './views/ProfileSubpages';
 
 const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(AppRoute.WELCOME);
@@ -23,13 +24,23 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   
-  // Favorites State (Mocking persistence with default values for prototype)
+  // Session Persistence for User Reviews
+  const [userGeneratedReviews, setUserGeneratedReviews] = useState<Record<string, Review[]>>({});
+  
+  // Favorites State
   const [favoriteIds, setFavoriteIds] = useState<string[]>(['2', '4']); 
 
   const toggleFavorite = (id: string) => {
     setFavoriteIds(prev => 
       prev.includes(id) ? prev.filter(fid => fid !== id) : [...prev, id]
     );
+  };
+
+  const handleAddReview = (attractionId: string, review: Review) => {
+    setUserGeneratedReviews(prev => ({
+      ...prev,
+      [attractionId]: [review, ...(prev[attractionId] || [])]
+    }));
   };
 
   const getFavoriteAttractions = () => {
@@ -47,6 +58,12 @@ const App: React.FC = () => {
   const renderRoute = () => {
     const defaultAttraction = selectedAttraction || ATTRACTIONS[0];
     const isFavorite = (id: string) => favoriteIds.includes(id);
+    
+    // Combine static reviews with session reviews
+    const currentReviews = [
+      ...(userGeneratedReviews[defaultAttraction.id] || []),
+      ...(defaultAttraction.userReviews || [])
+    ];
     
     switch (currentRoute) {
       case AppRoute.WELCOME:
@@ -91,12 +108,15 @@ const App: React.FC = () => {
         />;
       case AppRoute.DETAIL:
         return <Detail 
-          attraction={defaultAttraction} 
+          attraction={{...defaultAttraction, userReviews: currentReviews}} 
           onBack={() => navigate(AppRoute.HOME)} 
           onBook={() => navigate(AppRoute.BOOKING)} 
           onEnterAR={() => navigate(AppRoute.AR_VIEW, defaultAttraction)}
           isFavorite={isFavorite(defaultAttraction.id)}
           onToggleFavorite={() => toggleFavorite(defaultAttraction.id)}
+          isLoggedIn={isLoggedIn}
+          onLoginRequired={() => navigate(AppRoute.LOGIN)}
+          onAddReview={handleAddReview}
         />;
       case AppRoute.BOOKING:
         return <Booking 
@@ -116,15 +136,22 @@ const App: React.FC = () => {
             if (isAdminLoggedIn) navigate(AppRoute.ADMIN_DASHBOARD);
             else navigate(AppRoute.ADMIN_LOGIN);
           }} 
+          onNavigateSubpage={(route) => navigate(route)}
         />;
+      case AppRoute.PROFILE_PERSONAL:
+        return <PersonalInfo onBack={() => navigate(AppRoute.PROFILE)} />;
+      case AppRoute.PROFILE_NOTIFICATIONS:
+        return <NotificationSettings onBack={() => navigate(AppRoute.PROFILE)} />;
+      case AppRoute.PROFILE_PRIVACY:
+        return <PrivacySecurity onBack={() => navigate(AppRoute.PROFILE)} />;
+      case AppRoute.PROFILE_HELP:
+        return <HelpCenter onBack={() => navigate(AppRoute.PROFILE)} />;
       case AppRoute.ADMIN_DASHBOARD:
         if (!isAdminLoggedIn) {
-          // Force back to login if someone tries to direct-link without auth
           setTimeout(() => navigate(AppRoute.ADMIN_LOGIN), 0);
           return null;
         }
         return <AdminDashboard onBack={() => { 
-          // Logout admin and return to login screen
           setIsAdminLoggedIn(false); 
           navigate(AppRoute.ADMIN_LOGIN); 
         }} />;

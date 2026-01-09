@@ -138,7 +138,7 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
           <h2 className="text-xl font-bold ml-4">Booking Confirmed</h2>
         </div>
 
-        <div className="flex flex-col items-center justify-center flex-1 w-full max-w-sm">
+        <div className="flex flex-col items-center justify-center flex-1 w-full max-sm mx-auto">
           <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mb-8 shadow-lg shadow-emerald-200/50 animate-bounce">
             <CheckCircle2 className="w-12 h-12 text-emerald-600" />
           </div>
@@ -181,7 +181,7 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
         <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-black/5">
           <ArrowLeft className="w-6 h-6 text-slate-900" />
         </button>
-        <h2 className="text-xl font-bold ml-4">
+        <h2 className="text-xl font-bold ml-4 text-slate-900">
           {step === 'FORM' ? 'Compose Trip' : 'Payment'}
         </h2>
       </div>
@@ -244,23 +244,23 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
             <div className="px-6 space-y-4">
               <label className="text-[11px] font-black text-slate-400 ml-1 uppercase tracking-[0.1em] block">2. Applicant Details</label>
               <div className="bg-white p-4 rounded-[32px] border border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)] space-y-3">
-                 <div className="flex items-center gap-3 border-b border-slate-50 pb-3">
-                    <User className="w-5 h-5 text-slate-300" />
+                 <div className="flex items-center gap-3 border-b border-slate-50 pb-3 bg-white rounded-t-2xl px-4">
+                    <User className="w-5 h-5 text-slate-400" />
                     <input 
                       type="text" 
                       value={applicant.name}
                       onChange={(e) => setApplicant({...applicant, name: e.target.value})}
-                      className="w-full text-sm font-bold text-slate-800 outline-none placeholder:font-normal placeholder:text-slate-300"
+                      className="w-full text-sm font-bold text-black bg-white outline-none placeholder:font-normal placeholder:text-slate-400 py-2"
                       placeholder="Full Name"
                     />
                  </div>
-                 <div className="flex items-center gap-3">
-                    <Mail className="w-5 h-5 text-slate-300" />
+                 <div className="flex items-center gap-3 bg-white rounded-b-2xl px-4">
+                    <Mail className="w-5 h-5 text-slate-400" />
                     <input 
                       type="email" 
                       value={applicant.email}
                       onChange={(e) => setApplicant({...applicant, email: e.target.value})}
-                      className="w-full text-sm font-bold text-slate-800 outline-none placeholder:font-normal placeholder:text-slate-300"
+                      className="w-full text-sm font-bold text-black bg-white outline-none placeholder:font-normal placeholder:text-slate-400 py-2"
                       placeholder="Email Address"
                     />
                  </div>
