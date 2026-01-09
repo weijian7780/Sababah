@@ -4,6 +4,7 @@ import { AppRoute, Attraction } from './types';
 import { ATTRACTIONS } from './constants';
 import Welcome from './views/Welcome';
 import Login from './views/Login';
+import Signup from './views/Signup';
 import Home from './views/Home';
 import Explore from './views/Explore';
 import Detail from './views/Detail';
@@ -33,7 +34,15 @@ const App: React.FC = () => {
       case AppRoute.WELCOME:
         return <Welcome onNext={() => navigate(AppRoute.LOGIN)} />;
       case AppRoute.LOGIN:
-        return <Login onLogin={() => { setIsLoggedIn(true); navigate(AppRoute.HOME); }} />;
+        return <Login 
+          onLogin={() => { setIsLoggedIn(true); navigate(AppRoute.HOME); }} 
+          onSignup={() => navigate(AppRoute.SIGNUP)} 
+        />;
+      case AppRoute.SIGNUP:
+        return <Signup 
+          onSignup={() => { setIsLoggedIn(true); navigate(AppRoute.HOME); }} 
+          onBackToLogin={() => navigate(AppRoute.LOGIN)} 
+        />;
       case AppRoute.HOME:
         return <Home onSelect={(attr) => navigate(AppRoute.DETAIL, attr)} onCategory={(cat) => navigate(AppRoute.EXPLORE)} />;
       case AppRoute.EXPLORE:
