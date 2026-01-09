@@ -9,9 +9,11 @@ interface DetailProps {
   onBack: () => void;
   onBook: () => void;
   onEnterAR: () => void;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 }
 
-const Detail: React.FC<DetailProps> = ({ attraction, onBack, onBook, onEnterAR }) => {
+const Detail: React.FC<DetailProps> = ({ attraction, onBack, onBook, onEnterAR, isFavorite, onToggleFavorite }) => {
   const [activeTab, setActiveTab] = useState('Overview');
   const [aiTips, setAiTips] = useState<string>('Loading smart tips...');
 
@@ -46,8 +48,11 @@ const Detail: React.FC<DetailProps> = ({ attraction, onBack, onBook, onEnterAR }
               <Box className="w-6 h-6" />
               <span className="text-xs font-black uppercase tracking-widest">AR</span>
             </button>
-            <button className="p-3 bg-white/20 backdrop-blur-xl rounded-2xl text-white border border-white/20">
-              <Heart className="w-6 h-6" />
+            <button 
+              onClick={onToggleFavorite}
+              className={`p-3 backdrop-blur-xl rounded-2xl border transition-all ${isFavorite ? 'bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/30' : 'bg-white/20 text-white border-white/20 hover:bg-white/30'}`}
+            >
+              <Heart className={`w-6 h-6 ${isFavorite ? 'fill-current' : ''}`} />
             </button>
           </div>
         </div>

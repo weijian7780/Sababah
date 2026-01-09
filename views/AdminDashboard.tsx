@@ -1,7 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-// Added CircleDashed to imports to fix the "Cannot find name 'CircleDashed'" error on line 397
-import { ArrowLeft, Users, Landmark, DollarSign, Calendar, TrendingUp, ChevronDown, ArrowUpRight, ArrowDownRight, ArrowUpDown, Search, Filter, Eye, Edit3, Trash2, Box, Sparkles, CircleDashed } from 'lucide-react';
+import { ArrowLeft, Users, Landmark, DollarSign, Calendar, TrendingUp, ChevronDown, ArrowUpRight, ArrowDownRight, ArrowUpDown, Search, Filter, Eye, Edit3, Trash2, Box, Sparkles, CircleDashed, LogOut } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const MOCK_STATS = [
@@ -58,7 +57,7 @@ const CustomTooltip = ({ active, payload, label, selectedPeriod }: any) => {
     const current = data.revenue;
     const previous = data.prev;
     const diff = current - previous;
-    const percentChange = ((diff / previous) * 100).toFixed(1);
+    const percentChange = previous !== 0 ? ((diff / previous) * 100).toFixed(1) : '100';
     const isPositive = diff >= 0;
 
     return (
@@ -141,8 +140,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     }));
   };
 
-  const handleAction = (action: string, id: string) => {
-    console.log(`${action} booking: ${id}`);
+  const handleViewDetails = (id: string) => {
+    console.log(`View Details for booking: ${id}`);
+  };
+
+  const handleEditBooking = (id: string) => {
+    console.log(`Edit Booking: ${id}`);
+  };
+
+  const handleCancelBooking = (id: string) => {
+    console.log(`Cancel Booking: ${id}`);
   };
 
   const periods: Period[] = ['7 Days', '30 Days', 'Year'];
@@ -155,9 +162,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         <div className="flex items-center gap-4">
           <button 
             onClick={onBack} 
-            className="p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all border border-slate-100 active:scale-90"
+            className="p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all border border-slate-100 active:scale-90 flex items-center gap-2 text-slate-600 hover:text-red-500 group"
           >
-            <ArrowLeft className="w-6 h-6 text-slate-600" />
+            <LogOut className="w-6 h-6 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-black uppercase tracking-widest hidden md:inline">Sign Out</span>
           </button>
           <div className="flex flex-col">
             <h1 className="text-2xl md:text-3xl font-black text-[#0F172A] tracking-tight leading-none">
@@ -191,7 +199,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 mb-8">
-        <div className="lg:col-span-8 bg-white p-6 md:p-8 rounded-[32px] md:rounded-[48px] shadow-sm border border-slate-50 flex flex-col min-w-0">
+        {/* Main Chart Card - Added overflow-hidden and min-h-0 for Recharts stability */}
+        <div className="lg:col-span-8 bg-white p-6 md:p-8 rounded-[32px] md:rounded-[48px] shadow-sm border border-slate-50 flex flex-col min-w-0 min-h-0 overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
             <div className="flex flex-col">
               <div className="flex items-center gap-3">
@@ -234,8 +243,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             </div>
           </div>
           
-          <div className="relative w-full h-[280px] md:h-[350px] min-w-0">
-            <ResponsiveContainer width="100%" height="100%">
+          {/* Chart Wrapper Container - Explicit min-height and min-width to prevent Recharts -1 dimensions */}
+          <div className="relative w-full h-[300px] md:h-[400px] min-w-0 min-h-0 flex-1">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={activeData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -244,17 +254,38 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 11, fontWeight: 600}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 11, fontWeight: 600}} />
-                <Tooltip cursor={{ stroke: '#E2E8F0', strokeWidth: 2, strokeDasharray: '4 4' }} content={<CustomTooltip selectedPeriod={selectedPeriod} />} />
-                <Area type="monotone" dataKey="revenue" stroke="#059669" strokeWidth={4} fillOpacity={1} fill="url(#colorRevenue)" animationDuration={1200} />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#94A3B8', fontSize: 11, fontWeight: 600}} 
+                  dy={10} 
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#94A3B8', fontSize: 11, fontWeight: 600}} 
+                />
+                <Tooltip 
+                  cursor={{ stroke: '#E2E8F0', strokeWidth: 2, strokeDasharray: '4 4' }} 
+                  content={<CustomTooltip selectedPeriod={selectedPeriod} />} 
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="#059669" 
+                  strokeWidth={4} 
+                  fillOpacity={1} 
+                  fill="url(#colorRevenue)" 
+                  animationDuration={1200} 
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Quick Summary View */}
-        <div className="lg:col-span-4 bg-white p-6 md:p-8 rounded-[32px] md:rounded-[48px] shadow-sm border border-slate-50 flex flex-col">
+        <div className="lg:col-span-4 bg-white p-6 md:p-8 rounded-[32px] md:rounded-[48px] shadow-sm border border-slate-50 flex flex-col min-w-0 min-h-0">
           <h3 className="text-xl md:text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">
             <Box className="w-6 h-6 text-emerald-600" />
             Feature Matrix
@@ -290,7 +321,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
       </div>
 
       {/* Booking Management Table */}
-      <div className="bg-white rounded-[40px] shadow-sm border border-slate-50 overflow-hidden mb-8">
+      <div className="bg-white rounded-[40px] shadow-sm border border-slate-50 overflow-hidden mb-8 min-w-0">
         <div className="p-6 md:p-8 border-b border-slate-50 space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
@@ -358,7 +389,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                 filteredAndSortedBookings.map((booking) => (
                   <tr key={booking.id} className="hover:bg-slate-50/30 transition-colors group">
                     <td className="px-6 py-5">
-                      <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">{booking.id}</span>
+                      <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100/50 shadow-sm">
+                        {booking.id}
+                      </span>
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
@@ -404,19 +437,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                     <td className="px-6 py-5">
                       <div className="flex items-center justify-center gap-2">
                         <button 
-                          onClick={() => handleAction('View', booking.id)}
+                          onClick={() => handleViewDetails(booking.id)}
+                          title="View Details"
                           className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => handleAction('Edit', booking.id)}
+                          onClick={() => handleEditBooking(booking.id)}
+                          title="Edit Booking"
                           className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => handleAction('Cancel', booking.id)}
+                          onClick={() => handleCancelBooking(booking.id)}
+                          title="Cancel Booking"
                           className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                         >
                           <Trash2 className="w-4 h-4" />

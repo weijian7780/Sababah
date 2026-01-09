@@ -33,22 +33,6 @@ const Profile: React.FC<ProfileProps> = ({ onLogout, onAdmin }) => {
       </div>
 
       <div className="space-y-3">
-        <button 
-          onClick={onAdmin}
-          className="w-full flex items-center justify-between p-5 bg-emerald-50 rounded-3xl border border-emerald-100 group active:scale-[0.98] transition-all"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-600 text-white rounded-2xl">
-              <Briefcase className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <p className="font-bold text-emerald-800">CMS Dashboard</p>
-              <p className="text-xs text-emerald-600 font-medium">Manage attractions & bookings</p>
-            </div>
-          </div>
-          <ChevronRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
-        </button>
-
         <div className="bg-white rounded-[32px] p-2 shadow-sm border border-slate-100 space-y-1">
           {[
             { icon: <UserCircle className="w-5 h-5" />, label: 'Personal Information' },

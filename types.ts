@@ -56,6 +56,8 @@ export enum AppRoute {
   PAYMENT = 'payment',
   SUCCESS = 'success',
   PROFILE = 'profile',
+  ADMIN_LOGIN = 'admin-login',
+  ADMIN_SIGNUP = 'admin-signup',
   ADMIN_DASHBOARD = 'admin-dashboard',
   AR_VIEW = 'ar-view'
 }

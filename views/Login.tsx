@@ -1,18 +1,19 @@
 
 import React, { useState } from 'react';
-import { Mail, Lock, ArrowRight, Apple, Loader2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Apple, Loader2, ShieldCheck } from 'lucide-react';
+import { AppRoute } from '../types';
 
 interface LoginProps {
   onLogin: () => void;
   onSignup: () => void;
+  onAdminPortal: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin, onSignup }) => {
+const Login: React.FC<LoginProps> = ({ onLogin, onSignup, onAdminPortal }) => {
   const [isAuthenticating, setIsAuthenticating] = useState<string | null>(null);
 
   const handleSocialLogin = (provider: string) => {
     setIsAuthenticating(provider);
-    // Simulate external OAuth flow delay
     setTimeout(() => {
       setIsAuthenticating(null);
       onLogin();
@@ -21,7 +22,6 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSignup }) => {
 
   return (
     <div className="min-h-screen bg-white p-8 flex flex-col justify-center animate-in fade-in duration-500 relative">
-      {/* Auth Loading Overlay */}
       {isAuthenticating && (
         <div className="absolute inset-0 z-50 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in duration-300">
           <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mb-6 animate-bounce">
@@ -110,9 +110,21 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSignup }) => {
         </div>
       </div>
 
-      <p className="mt-16 text-center text-slate-400 font-medium">
-        Don't have an account? <button onClick={onSignup} className="text-emerald-500 font-black hover:underline ml-1">Sign Up</button>
-      </p>
+      <div className="mt-16 flex flex-col items-center gap-4">
+        <p className="text-center text-slate-400 font-medium">
+          Don't have an account? <button onClick={onSignup} className="text-emerald-500 font-black hover:underline ml-1">Sign Up</button>
+        </p>
+        
+        <div className="w-full max-w-xs h-px bg-slate-100 my-2"></div>
+        
+        <button 
+          onClick={onAdminPortal}
+          className="flex items-center gap-2 text-slate-400 hover:text-emerald-600 font-bold text-sm transition-colors group"
+        >
+          <ShieldCheck className="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+          Access Admin CMS Portal
+        </button>
+      </div>
     </div>
   );
 };
