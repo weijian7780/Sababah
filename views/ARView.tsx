@@ -5,7 +5,7 @@ import {
   History, Landmark, Sparkles, Navigation, Eye, ArrowUp, LocateFixed, 
   ChevronRight, Mountain, Droplets, PawPrint, Trees, Scan, Radio, 
   MapPin, ShieldAlert, Star, Users, DollarSign, Target, Activity,
-  Battery, Wifi, Cpu, Crosshair, Globe
+  Battery, Wifi, Cpu, Crosshair, Globe, ShieldClose, RefreshCw
 } from 'lucide-react';
 import { Attraction, ARHotspot } from '../types';
 
@@ -40,11 +40,12 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
   const setupCamera = async () => {
     setCameraStatus('requesting');
     try {
+      // Relaxed constraints to support desktop and mobile more reliably
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
-          facingMode: 'environment',
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         }, 
         audio: false 
       });
@@ -186,6 +187,34 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
 
     if (nearest !== isLockedOn) setIsLockedOn(nearest);
   }, [orientation, hotspots, scanning]);
+
+  if (cameraStatus === 'denied') {
+    return (
+      <div className="h-screen w-full bg-slate-950 flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
+        <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mb-8 border border-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.1)]">
+          <ShieldAlert className="w-12 h-12 text-red-500" />
+        </div>
+        <h2 className="text-2xl font-black text-white mb-4 uppercase tracking-tight">Camera Access Required</h2>
+        <p className="text-slate-400 font-medium mb-10 max-w-xs leading-relaxed">
+          AR features require camera permissions. Please check your browser settings or click the button below to retry.
+        </p>
+        <div className="flex flex-col gap-4 w-full max-w-xs">
+          <button 
+            onClick={setupCamera}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-3xl shadow-xl shadow-emerald-900/40 flex items-center justify-center gap-3 active:scale-95 transition-all text-sm uppercase tracking-widest"
+          >
+            <RefreshCw className="w-5 h-5" /> Retry Camera Access
+          </button>
+          <button 
+            onClick={onBack}
+            className="w-full bg-slate-900 text-slate-400 font-bold py-5 rounded-3xl hover:text-white transition-colors text-sm uppercase tracking-widest"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`relative h-screen w-full bg-black overflow-hidden font-mono transition-colors duration-300 ${lowStabilityWarning ? 'text-red-500' : 'text-emerald-400'}`}>

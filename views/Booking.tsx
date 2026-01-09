@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   ArrowLeft, CheckCircle2, Star, CreditCard, Wallet, Landmark, 
   Minus, Plus, Calendar, Clock, User, ChevronDown, Check, 
-  PlusCircle, Trash2, ShoppingBag, Receipt
+  PlusCircle, Trash2, ShoppingBag, Receipt, Mail
 } from 'lucide-react';
 import { Attraction } from '../types';
 import { ATTRACTIONS } from '../constants';
@@ -59,7 +59,6 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
 
   // Helper to calculate costs
   const calculateCosts = (price: number, members: typeof visitDetails.members) => {
-    // 50% discount for Malaysians, 70% off (pay 30%) for Concession as per previous logic
     const priceMalaysian = price * 0.5;
     const priceIntl = price;
     const priceConcession = price * 0.3;
@@ -72,7 +71,6 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
   const currentItemSubtotal = calculateCosts(currentAttraction.price, visitDetails.members);
   const currentTotalPax = visitDetails.members.adult + visitDetails.members.nonMalaysian + visitDetails.members.concession;
 
-  // Cart Totals
   const cartSubtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
   const finalSubtotal = cart.length > 0 ? cartSubtotal : currentItemSubtotal;
   const serviceTax = finalSubtotal * 0.06;
@@ -90,24 +88,18 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
 
   const addToCart = () => {
     if (currentTotalPax === 0) return;
-
     const newItem: BookingItem = {
       id: Date.now().toString(),
       attraction: currentAttraction,
       ...visitDetails,
       subtotal: currentItemSubtotal
     };
-
     setCart([...cart, newItem]);
-    
-    // Reset visit details for next entry (keep date/time as convenience)
     setVisitDetails({
       ...visitDetails,
       members: { adult: 1, nonMalaysian: 0, concession: 0 },
       remark: ''
     });
-    
-    // Scroll to bottom to show added item
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   };
 
@@ -117,7 +109,6 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
 
   const handleNext = () => {
     if (step === 'FORM') {
-      // If cart is empty, treat the current form as the item to checkout
       if (cart.length === 0) {
         if (currentTotalPax > 0) {
            addToCart();
@@ -151,9 +142,7 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
           <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mb-8 shadow-lg shadow-emerald-200/50 animate-bounce">
             <CheckCircle2 className="w-12 h-12 text-emerald-600" />
           </div>
-          
           <h1 className="text-3xl font-black text-slate-900 mb-4 text-center">Adventure Awaits!</h1>
-          
           <div className="bg-slate-50 rounded-3xl p-6 w-full mb-8 border border-slate-100">
             <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
               <span className="text-slate-500 font-bold text-sm">Total Paid</span>
@@ -171,11 +160,9 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
               ))}
             </div>
           </div>
-
           <p className="text-slate-500 text-sm text-center mb-10">
             Booking confirmation sent to <br/><span className="font-bold text-slate-900">{applicant.email}</span>
           </p>
-
           <button 
             onClick={onSuccess}
             className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-100 transition-all active:scale-95"
@@ -204,26 +191,26 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
           <div className="animate-in slide-in-from-right-4 duration-300 space-y-8">
             {/* 1. Venue Selection */}
             <div className="px-6 relative z-20">
-               <label className="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wider mb-2 block">1. Select Attraction</label>
+               <label className="text-[11px] font-black text-slate-400 ml-1 uppercase tracking-[0.1em] mb-4 block">1. Select Attraction</label>
                <div className="relative">
                  <button 
                     onClick={() => setIsSelectorOpen(!isSelectorOpen)}
-                    className="w-full text-left bg-white p-3 rounded-3xl shadow-sm border border-slate-100 transition-all active:scale-[0.99] group relative outline-none ring-offset-2 focus:ring-2 ring-emerald-500/20"
+                    className="w-full text-left bg-white rounded-[40px] shadow-[0_15px_30px_rgba(0,0,0,0.03)] border border-slate-100/50 transition-all active:scale-[0.99] group relative overflow-hidden outline-none"
                  >
-                    <div className="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm border border-slate-100 flex items-center gap-1.5 text-xs font-bold text-slate-700 group-hover:bg-white transition-colors">
+                    <div className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm border border-slate-100 flex items-center gap-1.5 text-xs font-black text-slate-700 group-hover:bg-white transition-colors">
                       Change <ChevronDown className={`w-3 h-3 transition-transform ${isSelectorOpen ? 'rotate-180' : ''}`} />
                     </div>
                     
                     <img 
                       src={currentAttraction.imageUrl} 
                       alt={currentAttraction.name} 
-                      className="w-full h-40 object-cover rounded-2xl mb-4"
+                      className="w-full h-48 object-cover"
                     />
-                    <div className="px-2 pb-2">
+                    <div className="p-6">
                       <h1 className="text-2xl font-black text-slate-900 mb-1">{currentAttraction.name}</h1>
                       <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">RM {currentAttraction.price}/pax</span>
-                          <span className="text-xs text-slate-400 flex items-center gap-1"><Landmark className="w-3 h-3" /> {currentAttraction.location}</span>
+                          <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">RM {currentAttraction.price}/pax</span>
+                          <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-wider"><Landmark className="w-3 h-3" /> {currentAttraction.location}</span>
                       </div>
                     </div>
                  </button>
@@ -253,26 +240,27 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
                </div>
             </div>
 
-            {/* 2. Applicant Info (Only show if first item or edit) */}
+            {/* 2. Applicant Info */}
             <div className="px-6 space-y-4">
-              <label className="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wider block">2. Applicant Details</label>
-              <div className="bg-white p-4 rounded-2xl border border-slate-100 space-y-3">
+              <label className="text-[11px] font-black text-slate-400 ml-1 uppercase tracking-[0.1em] block">2. Applicant Details</label>
+              <div className="bg-white p-4 rounded-[32px] border border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)] space-y-3">
                  <div className="flex items-center gap-3 border-b border-slate-50 pb-3">
                     <User className="w-5 h-5 text-slate-300" />
                     <input 
                       type="text" 
                       value={applicant.name}
                       onChange={(e) => setApplicant({...applicant, name: e.target.value})}
-                      className="w-full text-sm font-bold text-slate-800 outline-none placeholder:font-normal"
+                      className="w-full text-sm font-bold text-slate-800 outline-none placeholder:font-normal placeholder:text-slate-300"
                       placeholder="Full Name"
                     />
                  </div>
-                 <div className="grid grid-cols-1 gap-3">
+                 <div className="flex items-center gap-3">
+                    <Mail className="w-5 h-5 text-slate-300" />
                     <input 
                       type="email" 
                       value={applicant.email}
                       onChange={(e) => setApplicant({...applicant, email: e.target.value})}
-                      className="w-full text-sm font-bold text-slate-800 outline-none bg-slate-50 p-3 rounded-xl"
+                      className="w-full text-sm font-bold text-slate-800 outline-none placeholder:font-normal placeholder:text-slate-300"
                       placeholder="Email Address"
                     />
                  </div>
@@ -280,123 +268,74 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
             </div>
 
             {/* 3. Visit Details */}
-            <div className="px-6 space-y-5">
-              <label className="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wider block">3. Visit Details</label>
+            <div className="px-6 space-y-4">
+              <label className="text-[11px] font-black text-slate-400 ml-1 uppercase tracking-[0.1em] block">3. Visit Details</label>
 
               <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <div className="relative">
-                        <input 
-                            type="date" 
-                            value={visitDetails.date}
-                            onChange={(e) => setVisitDetails({...visitDetails, date: e.target.value})}
-                            className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-10 pr-4 text-sm font-semibold outline-none focus:ring-2 focus:ring-emerald-500"
-                        />
-                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
+                  <div className="relative">
+                      <input 
+                          type="date" 
+                          value={visitDetails.date}
+                          onChange={(e) => setVisitDetails({...visitDetails, date: e.target.value})}
+                          className="w-full bg-white border border-slate-100 rounded-2xl py-4 pl-11 pr-4 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      />
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                   </div>
-                  <div className="space-y-1">
-                    <div className="relative">
-                        <input 
-                            type="time" 
-                            value={visitDetails.time}
-                            onChange={(e) => setVisitDetails({...visitDetails, time: e.target.value})}
-                            className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-10 pr-4 text-sm font-semibold outline-none focus:ring-2 focus:ring-emerald-500"
-                        />
-                        <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
+                  <div className="relative">
+                      <input 
+                          type="time" 
+                          value={visitDetails.time}
+                          onChange={(e) => setVisitDetails({...visitDetails, time: e.target.value})}
+                          className="w-full bg-white border border-slate-100 rounded-2xl py-4 pl-11 pr-4 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      />
+                      <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                   </div>
               </div>
 
               {/* Pax Counters */}
-              <div className="space-y-3">
-                {/* Malaysian */}
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+              <div className="bg-white p-2 rounded-[32px] border border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)] space-y-1">
+                <div className="p-4 rounded-2xl flex items-center justify-between">
                     <div>
                         <p className="font-bold text-slate-800 text-sm">Adult (Malaysian)</p>
-                        <p className="text-xs text-emerald-600 font-bold">RM {(currentAttraction.price * 0.5).toFixed(0)}</p>
+                        <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest">RM {(currentAttraction.price * 0.5).toFixed(0)}</p>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => updateMember('adult', -1)} className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 active:scale-90"><Minus className="w-4 h-4" /></button>
-                        <span className="w-4 text-center font-bold text-slate-900">{visitDetails.members.adult}</span>
-                        <button onClick={() => updateMember('adult', 1)} className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700 active:scale-90"><Plus className="w-4 h-4" /></button>
+                    <div className="flex items-center gap-4 bg-slate-50 p-1.5 rounded-xl">
+                        <button onClick={() => updateMember('adult', -1)} className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-400 active:scale-90 shadow-sm"><Minus className="w-4 h-4" /></button>
+                        <span className="w-4 text-center font-black text-slate-900 text-sm">{visitDetails.members.adult}</span>
+                        <button onClick={() => updateMember('adult', 1)} className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white active:scale-90 shadow-md shadow-emerald-200"><Plus className="w-4 h-4" /></button>
                     </div>
                 </div>
 
-                {/* International */}
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div className="p-4 rounded-2xl flex items-center justify-between">
                     <div>
                         <p className="font-bold text-slate-800 text-sm">International</p>
-                        <p className="text-xs text-slate-400 font-medium">RM {currentAttraction.price.toFixed(0)}</p>
+                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">RM {currentAttraction.price.toFixed(0)}</p>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => updateMember('nonMalaysian', -1)} className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 active:scale-90"><Minus className="w-4 h-4" /></button>
-                        <span className="w-4 text-center font-bold text-slate-900">{visitDetails.members.nonMalaysian}</span>
-                        <button onClick={() => updateMember('nonMalaysian', 1)} className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700 active:scale-90"><Plus className="w-4 h-4" /></button>
+                    <div className="flex items-center gap-4 bg-slate-50 p-1.5 rounded-xl">
+                        <button onClick={() => updateMember('nonMalaysian', -1)} className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-400 active:scale-90 shadow-sm"><Minus className="w-4 h-4" /></button>
+                        <span className="w-4 text-center font-black text-slate-900 text-sm">{visitDetails.members.nonMalaysian}</span>
+                        <button onClick={() => updateMember('nonMalaysian', 1)} className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white active:scale-90 shadow-md shadow-emerald-200"><Plus className="w-4 h-4" /></button>
                     </div>
                 </div>
               </div>
-
-              {/* Add to Trip Button */}
-              <button 
-                onClick={addToCart}
-                disabled={currentTotalPax === 0}
-                className="w-full py-4 rounded-2xl border-2 border-emerald-500 text-emerald-700 font-bold flex items-center justify-center gap-2 bg-emerald-50/50 hover:bg-emerald-100 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
-              >
-                <PlusCircle className="w-5 h-5" />
-                Add to Trip (+RM {currentItemSubtotal.toFixed(0)})
-              </button>
             </div>
-
-            {/* 4. Cart / Trip Overview */}
-            {cart.length > 0 && (
-               <div className="px-6 pb-6 animate-in slide-in-from-bottom-8">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wider flex items-center gap-2">
-                       <ShoppingBag className="w-4 h-4" /> Your Trip Items ({cart.length})
-                    </label>
-                  </div>
-                  <div className="space-y-3">
-                    {cart.map((item) => (
-                       <div key={item.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4 relative overflow-hidden group">
-                          <img src={item.attraction.imageUrl} alt="" className="w-16 h-16 rounded-xl object-cover" />
-                          <div className="flex-1 min-w-0">
-                             <h4 className="font-bold text-slate-900 text-sm truncate">{item.attraction.name}</h4>
-                             <p className="text-xs text-slate-500 mt-0.5">{item.date} • {item.members.adult + item.members.nonMalaysian + item.members.concession} Pax</p>
-                             <p className="text-emerald-600 font-black text-sm mt-2">RM {item.subtotal.toFixed(0)}</p>
-                          </div>
-                          <button 
-                             onClick={() => removeFromCart(item.id)}
-                             className="absolute right-0 top-0 bottom-0 w-12 bg-red-50 flex items-center justify-center text-red-500 opacity-0 group-hover:opacity-100 transition-all translate-x-full group-hover:translate-x-0"
-                          >
-                             <Trash2 className="w-5 h-5" />
-                          </button>
-                       </div>
-                    ))}
-                  </div>
-               </div>
-            )}
           </div>
         ) : (
           <div className="px-6 space-y-6 animate-in slide-in-from-right-4 duration-300">
-            {/* Applicant Summary */}
-            <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100">
+            <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100">
                 <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
                     <User className="w-5 h-5 text-emerald-600" /> Applicant
                 </h3>
                 <div className="grid grid-cols-1 gap-2">
                     <p className="text-sm font-bold text-slate-800">{applicant.name}</p>
                     <p className="text-sm text-slate-500">{applicant.email}</p>
-                    <p className="text-sm text-slate-500">{applicant.phone}</p>
                 </div>
             </div>
 
-            {/* Cart Summary */}
-            <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100">
+            <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100">
                <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
                     <Receipt className="w-5 h-5 text-emerald-600" /> Order Summary
                </h3>
-               
                <div className="space-y-6">
                  {(cart.length > 0 ? cart : [{
                     attraction: currentAttraction,
@@ -413,49 +352,37 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
                              <span className="font-bold text-sm text-slate-900">RM {item.subtotal}</span>
                           </div>
                           <p className="text-xs text-slate-500">{item.date} @ {item.time}</p>
-                          <p className="text-xs text-slate-500 mt-1">
-                             {item.members.adult > 0 && `${item.members.adult} Adult `}
-                             {item.members.nonMalaysian > 0 && `${item.members.nonMalaysian} Intl `}
-                          </p>
                        </div>
                     </div>
                  ))}
                </div>
             </div>
 
-            {/* Payment Method */}
             <div className="space-y-4">
               <h3 className="text-lg font-black text-slate-900 px-1">Payment Method</h3>
               <div className="space-y-3">
                 {[
-                  { label: 'Credit/Debit Card', icon: <CreditCard className="w-5 h-5" />, sub: 'Visa, Mastercard' },
-                  { label: 'TnG eWallet', icon: <Wallet className="w-5 h-5" />, sub: 'Instant Payment' },
-                  { label: 'Online Banking', icon: <Landmark className="w-5 h-5" />, sub: 'FPX Secure' }
+                  { label: 'Credit/Debit Card', icon: <CreditCard className="w-5 h-5" /> },
+                  { label: 'TnG eWallet', icon: <Wallet className="w-5 h-5" /> }
                 ].map((method) => (
                   <button 
                     key={method.label}
                     onClick={() => setPaymentMethod(method.label)}
-                    className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all active:scale-[0.98] ${paymentMethod === method.label ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-100 bg-white'}`}
+                    className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${paymentMethod === method.label ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-100 bg-white'}`}
                   >
                     <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${paymentMethod === method.label ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${paymentMethod === method.label ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>
                             {method.icon}
                         </div>
-                        <div className="text-left">
-                            <span className="block text-sm font-bold text-slate-800">{method.label}</span>
-                            <span className="block text-xs text-slate-400">{method.sub}</span>
-                        </div>
+                        <span className="text-sm font-bold text-slate-800">{method.label}</span>
                     </div>
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === method.label ? 'border-emerald-500' : 'border-slate-300'}`}>
-                      {paymentMethod === method.label && <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />}
-                    </div>
+                    {paymentMethod === method.label && <Check className="w-5 h-5 text-emerald-600" />}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Price Breakdown */}
-            <div className="bg-slate-900 rounded-[32px] p-6 text-white shadow-xl shadow-slate-200">
+            <div className="bg-slate-900 rounded-[32px] p-6 text-white">
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between items-center text-sm">
                     <span className="text-slate-400 font-medium">Subtotal</span>
@@ -475,15 +402,15 @@ const Booking: React.FC<BookingProps> = ({ attraction: initialAttraction, onBack
         )}
       </div>
 
-      {/* Footer Button */}
+      {/* Footer Button - Emerald Green theme */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white p-6 border-t border-slate-50 z-50">
         <button 
           onClick={handleNext}
           disabled={step === 'FORM' && cart.length === 0 && currentTotalPax === 0}
-          className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-100 transition-all active:scale-95 text-lg disabled:opacity-50 disabled:grayscale"
+          className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-black py-5 rounded-2xl shadow-xl shadow-emerald-100/50 transition-all active:scale-[0.98] text-lg disabled:opacity-50 disabled:grayscale"
         >
           {step === 'FORM' 
-            ? (cart.length > 0 ? `Checkout Trip (${cart.length} Items)` : `Checkout RM ${currentItemSubtotal.toFixed(0)}`)
+            ? `Checkout RM ${currentItemSubtotal.toFixed(0)}`
             : `Pay RM ${totalPayable.toFixed(2)}`
           }
         </button>
