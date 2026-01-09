@@ -5,9 +5,10 @@ import {
   History, Landmark, Sparkles, Navigation, Eye, ArrowUp, LocateFixed, 
   ChevronRight, Mountain, Droplets, PawPrint, Trees, Scan, Radio, 
   MapPin, ShieldAlert, Star, Users, DollarSign, Target, Activity,
-  Battery, Wifi, Cpu, Crosshair, Globe, ShieldClose, RefreshCw
+  Battery, Wifi, Cpu, Crosshair, Globe, ShieldClose, RefreshCw, Loader2, SearchCode
 } from 'lucide-react';
 import { Attraction, ARHotspot } from '../types';
+import { geminiService } from '../services/geminiService';
 
 interface InternalHotspot extends ARHotspot {
   depth: number;
@@ -30,6 +31,11 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
   const [mapSelectedNode, setMapSelectedNode] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   
+  // Intel State
+  const [isFetchingIntel, setIsFetchingIntel] = useState(false);
+  const [intelText, setIntelText] = useState<string | null>(null);
+  const [decryptionProgress, setDecryptionProgress] = useState(0);
+
   // Tracking & Orientation State
   const [orientation, setOrientation] = useState({ alpha: 0, beta: 0, gamma: 0 });
   const prevOrientation = useRef({ alpha: 0, beta: 0, gamma: 0 });
@@ -40,7 +46,6 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
   const setupCamera = async () => {
     setCameraStatus('requesting');
     try {
-      // Relaxed constraints to support desktop and mobile more reliably
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: { ideal: 'environment' },
@@ -127,6 +132,33 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
   const handleCapture = () => {
     setShowFlash(true);
     setTimeout(() => setShowFlash(false), 150);
+  };
+
+  const handleFetchIntel = async (nodeIdx: number) => {
+    const spot = hotspots[nodeIdx];
+    setIsFetchingIntel(true);
+    setIntelText(null);
+    setDecryptionProgress(0);
+
+    // Simulated high-tech progress bar
+    const interval = setInterval(() => {
+      setDecryptionProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + (Math.random() * 15);
+      });
+    }, 150);
+
+    try {
+      const data = await geminiService.getHotspotIntel(spot.label, attraction.name);
+      setIntelText(data);
+    } catch (e) {
+      setIntelText("LINK FAILURE: SATELLITE CONNECTION LOST.");
+    } finally {
+      setTimeout(() => setIsFetchingIntel(false), 500);
+    }
   };
 
   const getHotspotIcon = (type: string) => {
@@ -218,14 +250,12 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
 
   return (
     <div className={`relative h-screen w-full bg-black overflow-hidden font-mono transition-colors duration-300 ${lowStabilityWarning ? 'text-red-500' : 'text-emerald-400'}`}>
-      {/* Background Camera */}
       <video 
         ref={videoRef}
         autoPlay playsInline muted
         className={`absolute inset-0 w-full h-full object-cover z-0 transition-all duration-700 ${cameraStatus === 'active' ? 'opacity-100' : 'opacity-10'} ${lowStabilityWarning ? 'grayscale-[0.5] contrast-[1.2]' : ''}`}
       />
 
-      {/* Cinematic Overlays */}
       <div className="absolute inset-0 z-10 pointer-events-none opacity-[0.05] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
       <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-b from-black/60 via-transparent to-black/80 shadow-[inset_0_0_200px_rgba(0,0,0,0.9)]" />
       
@@ -310,12 +340,10 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
           </div>
 
           <div className="relative flex-1 bg-black/60 rounded-[56px] border-2 border-emerald-500/20 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,0.8)] mb-8">
-             {/* Map Grid */}
             <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
               style={{ backgroundImage: 'linear-gradient(#10b981 1px, transparent 1px), linear-gradient(90deg, #10b981 1px, transparent 1px)', backgroundSize: '40px 40px' }} 
             />
             
-            {/* Concentric Ranges */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                <div className="w-[85%] aspect-square border-2 border-emerald-500/5 rounded-full flex items-center justify-center relative">
                   <span className="absolute top-2 text-[8px] font-black text-emerald-500/20 uppercase">50M RANGE</span>
@@ -328,10 +356,8 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
                </div>
             </div>
 
-            {/* Scanning Sweep */}
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-emerald-500/[0.08] to-transparent animate-[radar-sweep_5s_linear_infinite] origin-center pointer-events-none" />
 
-            {/* User Position (Center) */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
                <div className="relative transition-transform duration-200" style={{ transform: `rotate(${orientation.alpha}deg)` }}>
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-48 h-48 bg-emerald-400/[0.05] rounded-full blur-xl" 
@@ -342,7 +368,6 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
                </div>
             </div>
 
-            {/* Map Hotspots */}
             {hotspots.map((h, i) => (
               <button
                 key={h.id}
@@ -361,7 +386,6 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
               </button>
             ))}
 
-            {/* Map Selection Mini-Card */}
             {mapSelectedNode !== null && (
               <div className="absolute bottom-8 left-8 right-8 z-40 bg-emerald-950/98 backdrop-blur-3xl border border-emerald-500/30 p-6 rounded-[40px] shadow-[0_30px_80px_rgba(0,0,0,0.9)] animate-in slide-in-from-bottom-8 duration-500">
                 <div className="flex items-start gap-5 mb-5">
@@ -417,7 +441,6 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
       {/* AR Scene Content */}
       {!scanning && !showMapOverlay && (
         <>
-          {/* Target HUD Reticle */}
           <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none transition-all duration-300 ${lowStabilityWarning ? 'opacity-80 scale-125' : 'opacity-30'}`}>
             <div className={`relative w-32 h-32 border rounded-full flex items-center justify-center transition-colors duration-300 ${lowStabilityWarning ? 'border-red-500/60' : 'border-emerald-500/30'}`}>
               <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-5 ${lowStabilityWarning ? 'bg-red-500' : 'bg-emerald-500'}`} />
@@ -430,7 +453,6 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
             </div>
           </div>
 
-          {/* AR Hotspots */}
           {hotspots.map((spot, idx) => {
             const coords = getProjectedCoords(spot.x, spot.y);
             const isLocked = isLockedOn === idx;
@@ -498,7 +520,7 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
                       <h3 className="text-2xl font-black text-white uppercase leading-tight tracking-tight break-words">{hotspots[activeNode].label}</h3>
                     </div>
                   </div>
-                  <button onClick={() => setActiveNode(null)} className="p-2.5 bg-emerald-900/40 border border-emerald-500/20 rounded-2xl text-emerald-500 active:scale-90 hover:bg-emerald-500/10 transition-colors">
+                  <button onClick={() => { setActiveNode(null); setIntelText(null); }} className="p-2.5 bg-emerald-900/40 border border-emerald-500/20 rounded-2xl text-emerald-500 active:scale-90 hover:bg-emerald-500/10 transition-colors">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -520,18 +542,44 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
                    </div>
                 </div>
 
-                <div className="mb-8">
-                  <p className="text-sm leading-relaxed text-emerald-100 font-medium h-24 overflow-y-auto custom-scrollbar pr-2 italic opacity-80">
-                    "{hotspots[activeNode].description}"
-                  </p>
+                <div className="mb-8 relative min-h-[100px]">
+                  {isFetchingIntel ? (
+                    <div className="flex flex-col gap-4 animate-in fade-in">
+                       <div className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 text-emerald-500 animate-spin" />
+                          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Decrypting Field Reports...</span>
+                       </div>
+                       <div className="w-full h-1 bg-emerald-900 rounded-full overflow-hidden">
+                          <div className="h-full bg-emerald-400 transition-all duration-150" style={{ width: `${decryptionProgress}%` }} />
+                       </div>
+                    </div>
+                  ) : intelText ? (
+                    <div className="space-y-4 animate-in slide-in-from-top-2">
+                      <div className="flex items-center gap-2 text-emerald-400 mb-2">
+                        <Radio className="w-3 h-3 animate-pulse" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em]">DECRYPTED BRIEFING</span>
+                      </div>
+                      <p className="text-sm leading-relaxed text-emerald-100 font-mono opacity-90 border-l-2 border-emerald-500/30 pl-4">
+                        {intelText}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-relaxed text-emerald-100 font-medium h-24 overflow-y-auto custom-scrollbar pr-2 italic opacity-80">
+                      "{hotspots[activeNode].description}"
+                    </p>
+                  )}
                 </div>
                 
                 <div className="flex gap-4">
-                  <button className="flex-1 bg-emerald-900/30 border border-emerald-500/20 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 text-emerald-400 shadow-xl">
-                    <Eye className="w-5 h-5" /> INTEL
+                  <button 
+                    onClick={() => handleFetchIntel(activeNode!)}
+                    disabled={isFetchingIntel}
+                    className="flex-1 bg-emerald-900/30 border border-emerald-500/20 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 text-emerald-400 shadow-xl disabled:opacity-50"
+                  >
+                    {isFetchingIntel ? <Loader2 className="w-5 h-5 animate-spin" /> : <Eye className="w-5 h-5" />} INTEL
                   </button>
                   <button 
-                    onClick={() => { setNavigationNode(activeNode); setActiveNode(null); }}
+                    onClick={() => { setNavigationNode(activeNode); setActiveNode(null); setIntelText(null); }}
                     className={`flex-1 ${navigationNode === activeNode ? 'bg-emerald-500' : 'bg-emerald-600'} text-white py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-emerald-950/50`}
                   >
                     <Navigation className="w-5 h-5" /> {navigationNode === activeNode ? 'LOCKED' : 'ROUTE'}

@@ -57,13 +57,35 @@ export class GeminiService {
       return data;
     } catch (error: any) {
       console.error("Gemini Status Error:", error);
-      // If quota is hit, return a realistic simulated response based on the name
       const fallback = { 
         status: attraction.includes('Museum') ? "Good" : "Busy", 
         label: "Estimate: Moderate traffic", 
         emoji: "⚡" 
       };
       return fallback;
+    }
+  }
+
+  async getHotspotIntel(hotspotLabel: string, parentAttraction: string) {
+    const cacheKey = `intel_${hotspotLabel}_${parentAttraction}`;
+    const cached = this.getCached(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Act as a tactical field guide. Provide a "Classified Intel Briefing" for the specific point of interest: "${hotspotLabel}" located within "${parentAttraction}" in Sabah. 
+        Include:
+        1. "Tactical Value": Why this spot is significant.
+        2. "Field Notes": A hidden fact or secret tip.
+        3. "Environmental Intel": Best time to view or a unique characteristic.
+        Keep the tone professional, technical, and high-tech. Avoid flowery language. Max 60 words total.`,
+      });
+      const data = response.text;
+      this.setCache(cacheKey, data);
+      return data;
+    } catch (error) {
+      return "DATA CORRUPTION: Unable to reach satellite link. Field observation suggests high historical significance. Maintain awareness of terrain gradients.";
     }
   }
 

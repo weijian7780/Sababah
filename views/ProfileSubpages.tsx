@@ -1,70 +1,118 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ArrowLeft, UserCircle, Mail, Phone, ChevronRight, Bell, Smartphone, Send, ShieldCheck, Lock, Eye, HelpCircle, MessageCircle, FileText, Info, Search, Loader2 } from 'lucide-react';
+import { User } from '../types';
 
 interface SubpageProps {
   onBack: () => void;
 }
 
+interface PersonalInfoProps extends SubpageProps {
+  user: User;
+  onSave: (updatedUser: User) => void;
+}
+
 // 1. Personal Information
-export const PersonalInfo: React.FC<SubpageProps> = ({ onBack }) => {
+export const PersonalInfo: React.FC<PersonalInfoProps> = ({ user, onSave, onBack }) => {
   const [isSaving, setIsSaving] = useState(false);
+  const [editedUser, setEditedUser] = useState<User>(user);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
     setIsSaving(true);
     // Simulate a brief save delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsSaving(false);
-    onBack();
+    onSave(editedUser);
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditedUser(prev => ({ ...prev, avatar: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileSelect = () => {
+    fileInputRef.current?.click();
   };
 
   return (
     <div className="p-8 pb-32 animate-in slide-in-from-right-8 duration-500 bg-[#FDFDFD] min-h-full">
       <div className="flex items-center gap-4 mb-10">
-        <button onClick={onBack} className="p-3 bg-white shadow-sm rounded-2xl text-slate-400 active:scale-90 transition-transform"><ArrowLeft className="w-6 h-6" /></button>
-        <h2 className="text-2xl font-black text-slate-800 tracking-tight uppercase">Personal Info</h2>
+        <button onClick={onBack} className="p-2.5 bg-slate-100 rounded-2xl text-slate-400 active:scale-90 transition-transform">
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+        <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase">Personal Info</h2>
       </div>
 
       <div className="space-y-6">
         <div className="flex flex-col items-center mb-10">
-          <div className="relative mb-4">
-            <img src="https://picsum.photos/seed/user1/400/400" className="w-24 h-24 rounded-[32px] border-4 border-white shadow-xl" />
+          <div className="relative mb-6">
+            <img 
+              src={editedUser.avatar} 
+              className="w-32 h-32 rounded-[40px] border-4 border-white shadow-2xl object-cover" 
+              alt="Profile Avatar"
+            />
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handlePhotoChange} 
+              className="hidden" 
+              accept="image/*"
+            />
           </div>
-          <button className="text-[10px] font-black text-[#10B981] uppercase tracking-widest bg-emerald-50 px-6 py-2.5 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-colors">Change Photo</button>
+          <button 
+            onClick={triggerFileSelect}
+            className="text-[11px] font-black text-[#10B981] uppercase tracking-widest bg-emerald-50 px-8 py-3 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-all active:scale-95"
+          >
+            Change Photo
+          </button>
         </div>
 
-        {[
-          { icon: UserCircle, label: 'Full Name', value: 'Ahmad Daniel' },
-          { icon: Mail, label: 'Email Address', value: 'ahmad.daniel@example.com' },
-          { icon: Phone, label: 'Phone Number', value: '+60 12 345 6789' }
-        ].map((item, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-[40px] border border-slate-100/50 shadow-[0_10px_30px_rgba(0,0,0,0.02)] transition-all hover:shadow-md">
-            <div className="flex items-center gap-4 mb-1">
-              <item.icon className="w-4 h-4 text-slate-300" />
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{item.label}</span>
+        <div className="space-y-5">
+          {[
+            { id: 'name', icon: UserCircle, label: 'Full Name', value: editedUser.name },
+            { id: 'email', icon: Mail, label: 'Email Address', value: editedUser.email },
+            { id: 'phone', icon: Phone, label: 'Phone Number', value: editedUser.phone || '' }
+          ].map((item, idx) => (
+            <div key={idx} className="bg-white p-6 rounded-[40px] border border-slate-100/50 shadow-[0_10px_30px_rgba(0,0,0,0.02)] transition-all focus-within:border-emerald-200">
+              <div className="flex items-center gap-4 mb-2">
+                <item.icon className="w-4 h-4 text-slate-300" />
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{item.label}</label>
+              </div>
+              <input 
+                type={item.id === 'email' ? 'email' : 'text'}
+                value={item.value}
+                onChange={(e) => setEditedUser(prev => ({ ...prev, [item.id === 'name' ? 'name' : item.id]: e.target.value }))}
+                className="w-full text-base font-bold text-slate-900 ml-8 bg-transparent outline-none focus:text-emerald-600 transition-colors"
+              />
             </div>
-            <p className="text-sm font-bold text-slate-800 ml-8">{item.value}</p>
-          </div>
-        ))}
+          ))}
+        </div>
         
-        <div className="pt-6">
+        <div className="pt-10">
           <button 
             onClick={handleSave}
             disabled={isSaving}
             className="w-full relative group active:scale-95 transition-all overflow-hidden"
           >
-            {/* Main Button Body with specific Figma design styling */}
-            <div className="relative flex items-center justify-center bg-gradient-to-r from-[#10B981] to-[#059669] text-white font-black py-5 rounded-[40px] shadow-[0_15px_30px_rgba(16,185,129,0.3)] border-b-4 border-emerald-800/20">
+            {/* Main Button Body */}
+            <div className="relative flex items-center justify-center bg-gradient-to-r from-[#10B981] to-[#059669] text-white font-black py-5.5 rounded-[40px] shadow-[0_15px_40px_rgba(16,185,129,0.3)] border-b-4 border-emerald-800/20">
               <div className="flex items-center gap-3 relative z-10">
                 {isSaving ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-6 h-6 animate-spin" />
                 ) : (
-                  <span className="uppercase tracking-[0.3em] text-[11px]">Save Changes</span>
+                  <span className="uppercase tracking-[0.4em] text-[12px]">Save Changes</span>
                 )}
               </div>
               
               {/* Internal Accent Bar shown in screenshot */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-1.5 bg-emerald-400/30 rounded-full pointer-events-none" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-1.5 bg-emerald-400/30 rounded-full pointer-events-none" />
               
               {/* Glow effect */}
               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />

@@ -1,15 +1,16 @@
 
 import React from 'react';
 import { Shield, Bell, HelpCircle, LogOut, ChevronRight, UserCircle } from 'lucide-react';
-import { AppRoute } from '../types';
+import { AppRoute, User } from '../types';
 
 interface ProfileProps {
+  user: User;
   onLogout: () => void;
   onAdmin: () => void;
   onNavigateSubpage: (route: AppRoute) => void;
 }
 
-const Profile: React.FC<ProfileProps> = ({ onLogout, onAdmin, onNavigateSubpage }) => {
+const Profile: React.FC<ProfileProps> = ({ user, onLogout, onAdmin, onNavigateSubpage }) => {
   const menuItems = [
     { icon: <UserCircle className="w-6 h-6" />, label: 'Personal Information', route: AppRoute.PROFILE_PERSONAL },
     { icon: <Bell className="w-6 h-6" />, label: 'Notifications', route: AppRoute.PROFILE_NOTIFICATIONS },
@@ -28,7 +29,7 @@ const Profile: React.FC<ProfileProps> = ({ onLogout, onAdmin, onNavigateSubpage 
       <div className="flex flex-col items-center mb-12 text-center">
         <div className="relative mb-6">
           <img 
-            src="https://picsum.photos/seed/user1/400/400" 
+            src={user.avatar} 
             alt="Profile" 
             className="w-32 h-32 rounded-[48px] object-cover border-4 border-white shadow-2xl shadow-emerald-100 ring-1 ring-slate-100" 
           />
@@ -36,8 +37,8 @@ const Profile: React.FC<ProfileProps> = ({ onLogout, onAdmin, onNavigateSubpage 
             <Shield className="w-5 h-5" />
           </div>
         </div>
-        <h3 className="text-3xl font-black text-slate-900 tracking-tight">Ahmad Daniel</h3>
-        <p className="text-slate-400 font-medium tracking-tight mt-1">ahmad.daniel@example.com</p>
+        <h3 className="text-3xl font-black text-slate-900 tracking-tight">{user.name}</h3>
+        <p className="text-slate-400 font-medium tracking-tight mt-1">{user.email}</p>
       </div>
 
       {/* Settings Card Menu */}

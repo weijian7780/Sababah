@@ -113,20 +113,18 @@ const Home: React.FC<HomeProps> = ({ onSelect, onCategory, onBookDirect, favorit
         />
       </div>
 
-      {/* Main Categories */}
-      <div className="grid grid-cols-4 gap-4 mb-12">
+      {/* Main Categories - Simplified to 2 items */}
+      <div className="grid grid-cols-2 gap-4 mb-12">
         {[
           { icon: <Landmark className="w-6 h-6" />, label: 'Museum', color: 'bg-[#FFF7ED] text-[#F97316]', action: () => onCategory('Museum') },
-          { icon: <MessageSquare className="w-6 h-6" />, label: 'Feedback', color: 'bg-[#ECFDF5] text-[#10B981]', action: () => onCategory('Feedback') },
           { icon: <Ticket className="w-6 h-6" />, label: 'Booking', color: 'bg-[#EFF6FF] text-[#3B82F6]', action: onBookDirect },
-          { icon: <Info className="w-6 h-6" />, label: 'Info', color: 'bg-[#FAF5FF] text-[#A855F7]', action: () => onCategory('Info') }
         ].map((item, idx) => (
           <button 
             key={idx} 
             onClick={item.action}
             className="flex flex-col items-center gap-2 group"
           >
-            <div className={`w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 group-active:scale-95 shadow-sm`}>
+            <div className={`w-full h-16 ${item.color} rounded-2xl flex items-center justify-center transition-all group-hover:scale-105 group-active:scale-95 shadow-sm border border-slate-50`}>
               {item.icon}
             </div>
             <span className="text-xs font-bold text-slate-400">{item.label}</span>

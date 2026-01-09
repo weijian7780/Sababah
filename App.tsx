@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppRoute, Attraction, Review } from './types';
+import { AppRoute, Attraction, Review, User } from './types';
 import { ATTRACTIONS } from './constants';
 import Welcome from './views/Welcome';
 import Login from './views/Login';
@@ -20,10 +20,20 @@ import { PersonalInfo, NotificationSettings, PrivacySecurity, HelpCenter } from 
 
 const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(AppRoute.WELCOME);
+  const [lastMainRoute, setLastMainRoute] = useState<AppRoute>(AppRoute.HOME);
   const [selectedAttraction, setSelectedAttraction] = useState<Attraction | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   
+  // User Profile State
+  const [user, setUser] = useState<User>({
+    name: 'Ahmad Daniel',
+    email: 'ahmad.daniel@example.com',
+    phone: '+60 12 345 6789',
+    avatar: 'https://picsum.photos/seed/user1/400/400',
+    bookings: []
+  });
+
   // Session Persistence for User Reviews
   const [userGeneratedReviews, setUserGeneratedReviews] = useState<Record<string, Review[]>>({});
   
@@ -49,6 +59,11 @@ const App: React.FC = () => {
 
   // Simplified Router
   const navigate = (route: AppRoute, data?: any) => {
+    // Track the last "main" view we were in to handle back buttons correctly
+    if ([AppRoute.HOME, AppRoute.EXPLORE, AppRoute.FAVORITES, AppRoute.PROFILE].includes(currentRoute)) {
+      setLastMainRoute(currentRoute);
+    }
+
     if (data && (route === AppRoute.DETAIL || route === AppRoute.AR_VIEW)) {
       setSelectedAttraction(data);
     }
@@ -109,7 +124,7 @@ const App: React.FC = () => {
       case AppRoute.DETAIL:
         return <Detail 
           attraction={{...defaultAttraction, userReviews: currentReviews}} 
-          onBack={() => navigate(AppRoute.HOME)} 
+          onBack={() => navigate(lastMainRoute)} 
           onBook={() => navigate(AppRoute.BOOKING)} 
           onEnterAR={() => navigate(AppRoute.AR_VIEW, defaultAttraction)}
           isFavorite={isFavorite(defaultAttraction.id)}
@@ -131,6 +146,7 @@ const App: React.FC = () => {
         />;
       case AppRoute.PROFILE:
         return <Profile 
+          user={user}
           onLogout={() => { setIsLoggedIn(false); navigate(AppRoute.LOGIN); }} 
           onAdmin={() => {
             if (isAdminLoggedIn) navigate(AppRoute.ADMIN_DASHBOARD);
@@ -139,7 +155,7 @@ const App: React.FC = () => {
           onNavigateSubpage={(route) => navigate(route)}
         />;
       case AppRoute.PROFILE_PERSONAL:
-        return <PersonalInfo onBack={() => navigate(AppRoute.PROFILE)} />;
+        return <PersonalInfo user={user} onSave={(updatedUser) => { setUser(updatedUser); navigate(AppRoute.PROFILE); }} onBack={() => navigate(AppRoute.PROFILE)} />;
       case AppRoute.PROFILE_NOTIFICATIONS:
         return <NotificationSettings onBack={() => navigate(AppRoute.PROFILE)} />;
       case AppRoute.PROFILE_PRIVACY:
