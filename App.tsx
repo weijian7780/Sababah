@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppRoute, Attraction, Review, User } from './types';
+import { AppRoute, Attraction, Review, User, Booking } from './types';
 import { ATTRACTIONS } from './constants';
 import Welcome from './views/Welcome';
 import Login from './views/Login';
@@ -10,11 +10,13 @@ import AdminSignup from './views/AdminSignup';
 import Home from './views/Home';
 import Explore from './views/Explore';
 import Detail from './views/Detail';
-import Booking from './views/Booking';
+import BookingView from './views/Booking';
 import Profile from './views/Profile';
 import Favorites from './views/Favorites';
 import AdminDashboard from './views/AdminDashboard';
 import ARView from './views/ARView';
+import MyBookings from './views/MyBookings';
+import RefundRequest from './views/RefundRequest';
 import Layout from './components/Layout';
 import { PersonalInfo, NotificationSettings, PrivacySecurity, HelpCenter } from './views/ProfileSubpages';
 
@@ -22,16 +24,20 @@ const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(AppRoute.WELCOME);
   const [lastMainRoute, setLastMainRoute] = useState<AppRoute>(AppRoute.HOME);
   const [selectedAttraction, setSelectedAttraction] = useState<Attraction | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   
-  // User Profile State
+  // User Profile State with initial mock bookings
   const [user, setUser] = useState<User>({
     name: 'Ahmad Daniel',
     email: 'ahmad.daniel@example.com',
     phone: '+60 12 345 6789',
     avatar: 'https://picsum.photos/seed/user1/400/400',
-    bookings: []
+    bookings: [
+      { id: 'BK-1001', attractionId: '1', date: '2024-05-20', total: 45.00, status: 'completed' },
+      { id: 'BK-1002', attractionId: '2', date: '2024-06-15', total: 250.00, status: 'completed' }
+    ]
   });
 
   // Session Persistence for User Reviews
@@ -64,10 +70,24 @@ const App: React.FC = () => {
       setLastMainRoute(currentRoute);
     }
 
-    if (data && (route === AppRoute.DETAIL || route === AppRoute.AR_VIEW)) {
-      setSelectedAttraction(data);
+    if (data) {
+      if (route === AppRoute.DETAIL || route === AppRoute.AR_VIEW) {
+        setSelectedAttraction(data);
+      }
+      if (route === AppRoute.REFUND_REQUEST) {
+        setSelectedBooking(data);
+      }
     }
     setCurrentRoute(route);
+  };
+
+  const handleCancelBooking = (bookingId: string) => {
+    setUser(prev => ({
+      ...prev,
+      bookings: prev.bookings.map(b => 
+        b.id === bookingId ? { ...b, status: 'cancelled' } : b
+      )
+    }));
   };
 
   const renderRoute = () => {
@@ -134,7 +154,7 @@ const App: React.FC = () => {
           onAddReview={handleAddReview}
         />;
       case AppRoute.BOOKING:
-        return <Booking 
+        return <BookingView 
           attraction={defaultAttraction} 
           onBack={() => navigate(AppRoute.DETAIL, selectedAttraction)} 
           onSuccess={() => navigate(AppRoute.HOME)}
@@ -153,6 +173,23 @@ const App: React.FC = () => {
             else navigate(AppRoute.ADMIN_LOGIN);
           }} 
           onNavigateSubpage={(route) => navigate(route)}
+        />;
+      case AppRoute.MY_BOOKINGS:
+        return <MyBookings 
+          user={user}
+          onBack={() => navigate(AppRoute.PROFILE)}
+          onSelectRefund={(booking) => navigate(AppRoute.REFUND_REQUEST, booking)}
+        />;
+      case AppRoute.REFUND_REQUEST:
+        const refundTargetAttraction = ATTRACTIONS.find(a => a.id === selectedBooking?.attractionId) || ATTRACTIONS[0];
+        return <RefundRequest 
+          booking={selectedBooking!}
+          attraction={refundTargetAttraction}
+          onBack={() => navigate(AppRoute.MY_BOOKINGS)}
+          onConfirmRefund={(id) => {
+            handleCancelBooking(id);
+            navigate(AppRoute.MY_BOOKINGS);
+          }}
         />;
       case AppRoute.PROFILE_PERSONAL:
         return <PersonalInfo user={user} onSave={(updatedUser) => { setUser(updatedUser); navigate(AppRoute.PROFILE); }} onBack={() => navigate(AppRoute.PROFILE)} />;
@@ -190,7 +227,8 @@ const App: React.FC = () => {
     AppRoute.ADMIN_SIGNUP, 
     AppRoute.ADMIN_DASHBOARD, 
     AppRoute.AR_VIEW, 
-    AppRoute.BOOKING
+    AppRoute.BOOKING,
+    AppRoute.REFUND_REQUEST
   ].includes(currentRoute);
 
   return (

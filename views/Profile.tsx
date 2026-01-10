@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Shield, Bell, HelpCircle, LogOut, ChevronRight, UserCircle } from 'lucide-react';
+import { Shield, Bell, HelpCircle, LogOut, ChevronRight, UserCircle, Ticket } from 'lucide-react';
 import { AppRoute, User } from '../types';
 
 interface ProfileProps {
@@ -12,6 +12,7 @@ interface ProfileProps {
 
 const Profile: React.FC<ProfileProps> = ({ user, onLogout, onAdmin, onNavigateSubpage }) => {
   const menuItems = [
+    { icon: <Ticket className="w-6 h-6" />, label: 'My Bookings', route: AppRoute.MY_BOOKINGS },
     { icon: <UserCircle className="w-6 h-6" />, label: 'Personal Information', route: AppRoute.PROFILE_PERSONAL },
     { icon: <Bell className="w-6 h-6" />, label: 'Notifications', route: AppRoute.PROFILE_NOTIFICATIONS },
     { icon: <Shield className="w-6 h-6" />, label: 'Privacy & Security', route: AppRoute.PROFILE_PRIVACY },

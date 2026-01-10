@@ -1,8 +1,9 @@
 {
   "requestFramePermissions": [
     "camera",
+    "microphone",
     "geolocation"
   ],
   "name": "SabaBah - Explore Sabah",
-  "description": ""
+  "description": "Tactical AR and real-time travel guide for Sabah, Borneo."
 }

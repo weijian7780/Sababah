@@ -46,6 +46,12 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
   const setupCamera = async () => {
     setCameraStatus('requesting');
     try {
+      // Clear any existing stream
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: { ideal: 'environment' },
@@ -58,7 +64,10 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play().catch(console.error);
+          videoRef.current?.play().catch(err => {
+            console.error("Autoplay blocked:", err);
+            setCameraStatus('denied');
+          });
           setCameraStatus('active');
         };
       }
@@ -226,22 +235,22 @@ const ARView: React.FC<ARViewProps> = ({ attraction, onBack }) => {
         <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mb-8 border border-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.1)]">
           <ShieldAlert className="w-12 h-12 text-red-500" />
         </div>
-        <h2 className="text-2xl font-black text-white mb-4 uppercase tracking-tight">Camera Access Required</h2>
+        <h2 className="text-2xl font-black text-white mb-4 uppercase tracking-tight">Camera Link Restricted</h2>
         <p className="text-slate-400 font-medium mb-10 max-w-xs leading-relaxed">
-          AR features require camera permissions. Please check your browser settings or click the button below to retry.
+          The tactical interface requires active visual feeds. Please enable camera access in your browser settings and ensure no other application is using the sensor.
         </p>
         <div className="flex flex-col gap-4 w-full max-w-xs">
           <button 
             onClick={setupCamera}
             className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-3xl shadow-xl shadow-emerald-900/40 flex items-center justify-center gap-3 active:scale-95 transition-all text-sm uppercase tracking-widest"
           >
-            <RefreshCw className="w-5 h-5" /> Retry Camera Access
+            <RefreshCw className="w-5 h-5" /> Re-Initialize Link
           </button>
           <button 
             onClick={onBack}
             className="w-full bg-slate-900 text-slate-400 font-bold py-5 rounded-3xl hover:text-white transition-colors text-sm uppercase tracking-widest"
           >
-            Go Back
+            Abort AR Session
           </button>
         </div>
       </div>
